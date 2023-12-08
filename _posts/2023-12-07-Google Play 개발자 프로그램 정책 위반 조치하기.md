@@ -66,4 +66,4 @@ android_build_gradle_target_sdkverion.png){: style="display:block; margin-left:a
 
 정책 위반 경고 알림을 발견하고 당황한 순간부터 정책 위반 해결 알림을 받기까지 아는 내용은 거의 없었지만 고객센터에 물어보고 구글링하면서 이슈를 해결할 수 있었다.  
 역시 부딪히면서 배우고 하면 할 수 있다는 생각이 중요한 것 같다.  
-ISSUE CLEAR!
+CLEAR! 👍
