@@ -13,8 +13,6 @@ tags:
 > 기초부터 다지는 ElasticSearch 운영 노하우 책을 보고 공부했어요.
 > 실습은 Kinaba 에서 DevTools 기능을 이용해서 진행했어요.
 
-<br>
-
 ##### 1. 엘라스틱 서치 버전을 비롯한 정보 확인
 ```json
 GET /

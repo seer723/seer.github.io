@@ -14,8 +14,6 @@ tags:
 > 그래서 이전에 연동되어 있었던 Firebase Analytics 를 다시 적용해주어야 했다.  
 > Firebase 에 앱 프로젝트는 생성되어 있는 상태에서 Analytics 적용 작업을 진행하도록 하겠다.
 
-<br>
-
 # 1. 안드로이드 Firebase Analytics 적용하기
 
 Firebase 콘솔에 로그인하여 프로젝트 개요 > 프로젝트 설정 화면으로 이동한다.  
