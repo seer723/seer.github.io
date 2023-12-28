@@ -106,9 +106,9 @@ analytics:
 author:
   name             : "SEER"
   avatar           : "/assets/images/profile.jpg"
-  bio              : "개발과 일상의 글 그리고 습작"
+  bio              : "꾸준함의 힘"
   location         : # "Somewhere"
-  email            :
+  email            : "selfandtogether@gmail.com"
   links:
     - label: "GitHub"
       icon: "fab fa-fw fa-github"
