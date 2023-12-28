@@ -226,5 +226,6 @@ GET location_with_rules/_search
 
 user_dictionary_rules 를 적용해서 토크나이징이 잘 되는 것을 확인하였어요.
 
-더 자세한 정보는 [엘라스틱 서치 가이드북 사이트](https://esbook.kimjmin.net/06-text-analysis/6.7-stemming/6.7.2-nori){:target="_blank"}에서 확인하실 수 있으니 참고해보시면 될 것 같아요.
+더 자세한 정보는 [엘라스틱 서치 가이드북 사이트](https://esbook.kimjmin.net/06-text-analysis/6.7-stemming/6.7.2-nori){:target="_blank"}에서 확인하실 수 있으니 참고해보시면 좋을 것 같아요.
 
+미션 클리어! 👍
