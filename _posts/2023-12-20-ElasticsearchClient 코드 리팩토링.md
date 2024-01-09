@@ -13,7 +13,7 @@ tags:
 > 스프링부트에서 엘라스틱 서치 클라이언트를 사용하는 코드를 리팩토링해보려 해요.  
 > 리팩토링할 부분은 파라미터 변수에 따라 분기처리를 해주는 부분이예요.
 
-##### 1. 리팩토링 전 코드
+## 1. 리팩토링 전 코드
 ```java
 public List<SchoolDTO> searchSchool(String query, Set<String> district, String sort, int page, int size) throws IOException {
     List<String> fields = Arrays.asList("name", "city");
@@ -70,7 +70,7 @@ public List<SchoolDTO> searchSchool(String query, Set<String> district, String s
 }
 ```
 
-##### 2. 리팩토링 후 코드
+## 2. 리팩토링 후 코드
 ```java
 public List<SchoolDTO> searchSchool(String query, Set<String> district, String sort, int page, int size) throws IOException {
     List<Query> queries = new ArrayList<>();
@@ -129,7 +129,7 @@ private Query boolQuery(List<Query> queries) {
 }
 ```
     
-##### 3. 리팩토링을 통해 얻은 효과
+## 3. 리팩토링을 통해 얻은 효과
 
 > 코드 가독성 향상
 

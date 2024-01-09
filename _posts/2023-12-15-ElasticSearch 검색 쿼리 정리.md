@@ -13,32 +13,32 @@ tags:
 > 기초부터 다지는 ElasticSearch 운영 노하우 책을 보고 공부했어요.
 > 실습은 Kinaba 에서 DevTools 기능을 이용해서 진행했어요.
 
-##### 1. 엘라스틱 서치 버전을 비롯한 정보 확인
+## 1. 엘라스틱 서치 버전을 비롯한 정보 확인
 ```json
 GET /
 ```
 
-##### 2. 인덱스 목록 확인
+## 2. 인덱스 목록 확인
 ```json
 GET _cat/indices
 ```
     
-##### 3. 특정 인덱스 확인
+## 3. 특정 인덱스 확인
 ```json
 GET _cat/indices/[인덱스명]
 ```
 
-##### 4. 특정 문서 조회
+## 4. 특정 문서 조회
 ```json
 GET [인덱스명]/_doc/[id]
 ```
     
-##### 5. 인덱스내 문서 개수 조회
+## 5. 인덱스내 문서 개수 조회
 ```json
 GET [인덱스명]/_count
 ```
     
-##### 6. 인덱스내 모든 문서 조회
+## 6. 인덱스내 모든 문서 조회
 ```json
 GET [인덱스명]/_search
 {
@@ -48,7 +48,7 @@ GET [인덱스명]/_search
 }
 ```
     
-##### 7. 분석기 동작 확인
+## 7. 분석기 동작 확인
 ```json
 GET /_analyze
 {
@@ -71,7 +71,7 @@ GET /_analyze
 }
 ```
 
-##### 8. 데이터 벌크 추가
+## 8. 데이터 벌크 추가
 ```json
 POST [인덱스명:serach_sample]/_bulk
 {"index":{"_id":"1"}}
@@ -98,7 +98,7 @@ POST [인덱스명:serach_sample]/_bulk
 { "title" : "Linux Kernel Development, Second Edition", "publisher": "Sams", "ISBN": "9780672327209", "release_date": "2005/01/01", "description" : "The Linux kernel is one of the most important and far-reaching open-source projects. That is why Novell Press is excited to bring you the second edition of Linux Kernel Development, Robert Love's widely acclaimed insider's look at the Linux kernel. This authoritative, practical guide helps developers better understand the Linux kernel through updated coverage of all the major subsystems as well as new features associated with the Linux 2.6 kernel. You'll be able to take an in-depth look at Linux kernel from both a theoretical and an applied perspective as you cover a wide range of topics, including algorithms, system call interface, paging strategies and kernel synchronization. Get the top information right from the source in Linux Kernel Development." }
 ``` 
 
-##### 9. 검색하기
+## 9. 검색하기
 ```json
 GET search_sample/_search
 {
@@ -110,7 +110,7 @@ GET search_sample/_search
 }
 ```
 
-##### 10. 검색 결과 정렬하기
+## 10. 검색 결과 정렬하기
 ```json
 GET search_sample/_search
 {
@@ -127,7 +127,7 @@ GET search_sample/_search
 
 Sort는 Text 필드가 아닌 Keyword나 Integer와 같은 Not Analyzed가 기본인 필드를 기준으로 해야되요.
 
-##### 11. 원하는 필드만 출력하기
+## 11. 원하는 필드만 출력하기
 ```json
 GET search_sample/_search
 {
@@ -140,7 +140,7 @@ GET search_sample/_search
 }
 ```
 
-##### 12. 검색된 단어 강조하기
+## 12. 검색된 단어 강조하기
 ```json
 GET search_sample/_search
 {
@@ -157,7 +157,7 @@ GET search_sample/_search
 }
 ```
 
-##### 13. match_phrase
+## 13. match_phrase
 ```json
 GET search_sample/_search
 {
@@ -193,7 +193,7 @@ GET search_sample/_search
 match_phrase는 검색토큰 순서를 고려해요.  
 match_phrase도 match와 마찬가지로 검색어 토큰을 만들지만 검색어 토큰이 정확한 순서로 포함된 문서를 찾기 때문에 일부 토큰만 포함된 문서는 보여주지 않아요.
     
-##### 14. Query Context 와 Filter Context
+## 14. Query Context 와 Filter Context
 1. Query Context
   - Full Text Search 를 의미하며 검색어가 문서와 얼마나 매칭되는가를 표현하는 score 값을 가져요.
   - match, match_phrase, multi_match, query_string 이 있어요.
@@ -224,7 +224,7 @@ GET search_sample/_search
 }
 ```
 
-##### 15. Range 쿼리 사용
+## 15. Range 쿼리 사용
 ```json
 GET search_sample/_search
 {
@@ -240,7 +240,7 @@ GET search_sample/_search
 ```
 wildcard query는 모든 inverted index를 하나하나 확인하기 때문에 검색 속도가 매우 느리기 때문에 사용을 지양하는 것이 좋아요.
     
-##### 16. Bool Query
+## 16. Bool Query
 1. Bool Query 항목들
   - must : 항목 내 쿼리에 일치하는 문서를 검색, 스코어링 O
   - filter : 항목 내 쿼리에 일치하는 문서를 검색, 캐싱 O
@@ -281,7 +281,7 @@ filter context 에 포함되는 쿼리들은 filter 절에 넣는 것이 좋아�
 must 절에 range를 넣어도 되지만 filter 절을 쓰는게 속도가 더 빨라요.  
 왜냐하면 must 절에 포함된 Filter Context 들은 score 를 계산하는 데 활용되기 때문에 불필요한 연산들이 들어가기 때문이예요.
     
-##### 17. must_not
+## 17. must_not
 ```json
 GET search_sample/_search
 {
@@ -315,7 +315,7 @@ GET search_sample/_search
 ```
 description 필드에 performance 라는 문자열이 포함되지 않는 문서를 검색하는 쿼리예요.
         
-##### 18. should
+## 18. should
 ```json
 GET search_sample/_search
 {
@@ -356,7 +356,7 @@ GET search_sample/_search
 ```
 should 절 내에 일치하는 부분이 있는 문서는 스코어가 올라가게 되요.
         
-##### 19. minimum_should_match 옵션
+## 19. minimum_should_match 옵션
 ```json
 GET search_sample/_search
 {
@@ -397,4 +397,3 @@ GET search_sample/_search
 }
 ```
 minimum_should_match 옵션의 값(1)은 should 절 쿼리중 적어도 하나는 일치해야 결과를 리턴한다는 의미예요.        
-            
