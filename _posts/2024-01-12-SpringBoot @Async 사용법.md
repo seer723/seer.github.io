@@ -1,18 +1,19 @@
 ---
 title: "2024-01-12-SpringBoot @Async 사용법"
-last_modified_at: 2024-01-09
+last_modified_at: 2024-01-12
 categories:
   - Java
 tags:
   - Java
   - SpringBoot
   - @Async
+  - 비동기
 ---
 
-> 모던 자바 인 액션(한빛미디어) 책을 보면서 동작 파라미터화에 대해 공부한 내용을 정리했어요.  
-> 농장재고목록 애플리케이션 예제 코드를 개선하면서 자바 8의 장점을 느껴볼 수 있는 내용이예요.  
+> 기존에 사용하고 있던 학교 검색 API 의 성능을 개선해야하는 일이 생겼는데요.  
+> Elasticsearch 를 직접적으로 수정하지는 않고 @Async 를 써서 SprintBoot 상에 구현된 로직을 개선하여 성능을 높이는 작업을 진행했어요.
 
-##### 1. 농장재고목록 애플리케이션
+##### 1. @Async 란?
 
 AsyncApplication.java
 ```java
@@ -115,26 +116,11 @@ public class SyncService {
 }
 ```
 
-@Async 를 붙인 서비스를 다른 서비스 내에서 호출하면 동작하지 않음
+##### 2. 실제 코드 @Async 적용 및 유의사항
 
-@Async 를 붙인 서비스를 컨트롤러로 빼줘야 동작함
-
+> ### 기존 동기식 코드
 
 ```java
-[동기 - 컨트롤러로 분리]
-
-        ### addSearchTerm Start###
-        ### addSearchTerm End###
-        ### searchHospitals start ###
-start: 1705020297771
-        ### searchHospitals set queries ###
-        ### searchHospitals set sorts ###
-        ### searchHospitals set request ###
-        ### searchHospitals send request ###
-end: 1705020297889
-elapsed millis: 118 millis
-### searchHospitals end ###
-
 public ListResponseDto<SearchDto.Event> searchEvents(String query, String type, String city, Set<String> district, String sort, int page, int size)
         throws IOException {
     addSearchTerm(SearchDto.SearchTerm.create(query));
@@ -176,23 +162,10 @@ public void addSearchTerm(SearchDto.SearchTerm searchTerm) throws IOException {
 }
 ```
 
+> ### @Async 를 적용한 비동기식 코드
+
 ```java
-[비동기 - 컨트롤러로 분리]
-
-        ### searchHospitals start ###
-start: 1705020332746
-        ### searchHospitals set queries ###
-        ### addSearchTerm Start###
-        ### searchHospitals set sorts ###
-        ### searchHospitals set request ###
-        ### searchHospitals send request ###
-end: 1705020332933
-elapsed millis: 187 millis
-### searchHospitals end ###
-        ### addSearchTerm End###
-
-public ListResponseDto<SearchDto.Event> searchEvents(String query, String type, String city, Set<String> district, String sort, int page, int size)
-        throws IOException {
+public ListResponseDto<SearchDto.Event> searchEvents(String query, String type, String city, Set<String> district, String sort, int page, int size) throws IOException {
     List<Query> queries = new ArrayList<>();
     queries.add(multiMatchQuery(query, ElasticSearch.FIELDS_NAME, ElasticSearch.FIELDS_HOSPITAL_NAME, ElasticSearch.FIELDS_CITY,
             ElasticSearch.FIELDS_DISTRICT));
@@ -233,5 +206,18 @@ public void addSearchTerm(SearchDto.SearchTerm searchTerm) throws IOException {
 }
 ```
 
+@Async 를 붙인 서비스를 다른 서비스 내에서 호출하면 동작하지 않음
+
+@Async 를 붙인 서비스를 컨트롤러로 빼줘야 동작함
+
+##### 3. 성능 개선 확인
+
+포스트맨 응답속도
+
+1. 동기
+   785ms, 310ms, 212ms, 247ms, 240ms, 233ms, 115ms, 229ms, 266ms, 261ms > 289.8ms
+
+2. 비동기
+   421ms, 108ms, 120ms, 94ms, 96ms, 16ms, 95ms, 112ms, 1112ms, 105ms > 227.9 ms
 
 오늘도 미션 클리어! 👍
