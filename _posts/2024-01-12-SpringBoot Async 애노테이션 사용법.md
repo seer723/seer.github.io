@@ -6,7 +6,7 @@ categories:
 tags:
   - Java
   - SpringBoot
-  - @Async
+  - Async
   - 비동기
 ---
 
