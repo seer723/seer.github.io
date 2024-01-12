@@ -267,7 +267,9 @@ public void addSearchTerm(SearchDto.SearchTerm searchTerm) throws IOException {
 
 아쉽게도 개발 환경에서 엘라스틱 서치가 쓰이고 있어서 부하 테스트는 진행하지 못했어요.
 
-대신에 Postman을 이용해서 addSearchTerm 함수를 동기/비동기로 호출 했을 때 응답시간을 측정해보았어요.
+대신에 Postman을 이용해서 무작위로 검색어를 입력해보면서 학교 검색 API를 테스트를 했어요.
+
+아래는 addSearchTerm 함수가 각각 동기/비동기일 때 API 응답시간을 측정한 표예요.
 
 | 항목 | 동기 | 비동기 |
 |----|------|------|
