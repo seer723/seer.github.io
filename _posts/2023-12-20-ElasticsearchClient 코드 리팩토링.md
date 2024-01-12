@@ -8,10 +8,12 @@ tags:
   - ElasticsearchClient
   - SpringBoot
   - Refactoring
+  - QueryDSL
 ---
 
-> 스프링부트에서 엘라스틱 서치 클라이언트를 사용하는 코드를 리팩토링해보려 해요.  
-> 리팩토링할 부분은 파라미터 변수에 따라 분기처리를 해주는 부분이예요.
+> 스프링부트에서 학교 검색 기능을 구현한 메소드를 리팩토링해보려 해요.  
+> 리팩토링할 부분은 파라미터 변수에 따라 분기처리를 해주는 부분인데요.
+> ElasticsearchClient Java API 에서 제공하는 QueryDSL 함수를 이용해서 리팩토링을 진행했어요.
 
 ## 1. 리팩토링 전 코드
 ```java
