@@ -14,6 +14,107 @@ tags:
 
 ##### 1. 농장재고목록 애플리케이션
 
+AsyncApplication.java
+```java
+package org.example.async;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableAsync;
+
+@SpringBootApplication
+@EnableAsync
+public class AsyncApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(AsyncApplication.class, args);
+    }
+
+}
+```
+
+AsyncController.java
+```java
+package org.example.async.controller;
+
+import lombok.RequiredArgsConstructor;
+import org.example.async.service.AsyncService;
+import org.example.async.service.SyncService;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequiredArgsConstructor
+public class AsyncController {
+    private static final int COUNT = 1000;
+
+    private final SyncService syncService;
+    private final AsyncService asyncService;
+
+    @GetMapping("/sync")
+    public String goSync() {
+        long start = System.currentTimeMillis();
+        System.out.println("### sync start ###");
+        System.out.println("start: " + start);
+        for (int i = 0; i < COUNT; i++) {
+            syncService.sync(i + 1);
+        }
+        long end = System.currentTimeMillis();
+        System.out.println("end: " + end);
+        System.out.println("elapsed millis: " + (end - start) + " millis");
+        System.out.println("### sync end ###");
+        return "sync";
+    }
+
+    @GetMapping("/async")
+    public String goAsync() throws InterruptedException {
+        long start = System.currentTimeMillis();
+        System.out.println("### async start ###");
+        System.out.println("start: " + start);
+        for (int i = 0; i < COUNT; i++) {
+            asyncService.async(i + 1);
+        }
+        long end = System.currentTimeMillis();
+        System.out.println("end: " + end);
+        System.out.println("elapsed millis: " + (end - start) + " millis");
+        System.out.println("### async end ###");
+        return "async";
+    }
+
+}
+```
+
+AsyncService.java
+```java
+package org.example.async.service;
+
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+
+@Service
+public class AsyncService {
+    @Async
+    public void async(int index) throws InterruptedException {
+        Thread.sleep(100);
+        System.out.println("async - " + index);
+    }
+}
+```
+
+SyncService.java
+```java
+package org.example.async.service;
+
+import org.springframework.stereotype.Service;
+
+@Service
+public class SyncService {
+    public void sync(int index) {
+        System.out.println("sync - " + index);
+    }
+}
+```
+
 @Async 를 붙인 서비스를 다른 서비스 내에서 호출하면 동작하지 않음
 
 @Async 를 붙인 서비스를 컨트롤러로 빼줘야 동작함
