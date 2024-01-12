@@ -1,5 +1,5 @@
 ---
-title: "2024-01-12-SpringBoot @Async 사용법"
+title: "SpringBoot @Async 사용법"
 last_modified_at: 2024-01-12
 categories:
   - Java

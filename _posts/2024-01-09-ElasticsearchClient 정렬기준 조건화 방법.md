@@ -1,5 +1,5 @@
 ---
-title: "2024-01-09-ElasticsearchClient 정렬기준 QueryDSL 적용 예제"
+title: "ElasticsearchClient 정렬기준 QueryDSL 적용 예제"
 last_modified_at: 2024-01-09
 categories:
   - Java
