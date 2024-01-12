@@ -20,6 +20,20 @@ tags:
 
 
 ```java
+[동기 - 컨트롤러로 분리]
+
+        ### addSearchTerm Start###
+        ### addSearchTerm End###
+        ### searchHospitals start ###
+start: 1705020297771
+        ### searchHospitals set queries ###
+        ### searchHospitals set sorts ###
+        ### searchHospitals set request ###
+        ### searchHospitals send request ###
+end: 1705020297889
+elapsed millis: 118 millis
+### searchHospitals end ###
+
 public ListResponseDto<SearchDto.Event> searchEvents(String query, String type, String city, Set<String> district, String sort, int page, int size)
         throws IOException {
     addSearchTerm(SearchDto.SearchTerm.create(query));
@@ -62,6 +76,20 @@ public void addSearchTerm(SearchDto.SearchTerm searchTerm) throws IOException {
 ```
 
 ```java
+[비동기 - 컨트롤러로 분리]
+
+        ### searchHospitals start ###
+start: 1705020332746
+        ### searchHospitals set queries ###
+        ### addSearchTerm Start###
+        ### searchHospitals set sorts ###
+        ### searchHospitals set request ###
+        ### searchHospitals send request ###
+end: 1705020332933
+elapsed millis: 187 millis
+### searchHospitals end ###
+        ### addSearchTerm End###
+
 public ListResponseDto<SearchDto.Event> searchEvents(String query, String type, String city, Set<String> district, String sort, int page, int size)
         throws IOException {
     List<Query> queries = new ArrayList<>();
