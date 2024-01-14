@@ -11,16 +11,16 @@ tags:
 ---
 
 > 기존에 사용하고 있던 학교 검색 API 의 성능을 개선해야하는 일이 생겼는데요.  
-> 개선 방안에 대해 고민을 해보면서 Elasticsearch 를 직접적으로 수정하기는 아직 어려울 것 같다는 판단이 들었어요.
-> 그래서 우선은 SprintBoot 상에 구현된 로직에 @Async 를 적용하여 성능을 높여보자는 방향을 잡고 작업을 진행했어요.
+> 개선 방안에 대해 고민을 해보면서 Elasticsearch 를 직접적으로 수정하기는 아직 어려울 것 같다는 판단이 들었어요.  
+> 그래서 우선은 SprintBoot 상에 구현된 로직을 @Async 를 이용하여 성능을 높여보자는 방향을 잡고 작업을 진행했어요.
 
-##### 1. @Async란?
+## 1. @Async란?
 
 @Async는 메서드를 비동기로 실행하도록 지정하는 어노테이션인데요.
 
 저는 아직 @Async를 제대로 써보지 못해서 우선 실제코드에 적용하기 전에 간단한 예제를 만들어보았어요.
 
-프로젝트 코드는 [spring-boot-async-example](https://github.com/seerlog/spring-boot-async-example){:target="_blank"}에서 보실 수 있어요.
+프로젝트 코드는 [spring-boot-async-example](https://github.com/seerlog/spring-boot-async-example){:target="_blank"} 에서 보실 수 있어요.
 
 > #### AsyncApplication.java
 > ```java
@@ -41,7 +41,7 @@ tags:
 > }
 > ```
 
-> #### AsyncController.java
+> #### AsyncController.java  
 > ```java
 > package org.example.async.controller;
 > 
@@ -141,151 +141,153 @@ tags:
 > }
 > ```
 
-sync 요청과 async 요청 API를 각각 만들고 대응되는 서비스를 구현한 예제예요.
+sync 요청과 async 요청을 처리하는 컨트롤러와 서비스를 구현한 예제예요.
 
 async 서비스의 경우에는 Thread.sleep(100) 을 사용해서 0.1초의 지연을 발생시켰어요.
 
-이제 스프링 부트 프로젝트를 실행하고 http://localhost:8080/sync 요청을 호출해보면 바로 응답이 오는 걸 확인할 수 있어요.
+이제 스프링 부트 프로젝트를 실행하고 http://localhost:8080/sync 를 호출해보면 바로 응답이 오는 걸 확인할 수 있어요.
 
-다음으로 http://localhost:8080/async 요청을 호출해보면 응답은 바로 오지만 로그를 보면 요청 처리중인 모습을 확인할 수 있는데요.
+다음으로 http://localhost:8080/async 를 호출해보면 응답은 바로 오지만 로그를 보면 요청 처리중인 모습을 확인할 수 있는데요.
 
-@Async로 핵심 로직 이외의 부분을 비동기로 처리해주면 응답속도를 높일 수 있을 것 같아요.
+이를 통해 Tomcat 의 Servlet 스레드와는 별개로 다른 스레드에서 async 서비스 로직이 실행되는 것을 알 수 있어요.
 
-##### 2. 실제 코드 @Async 적용 및 유의사항
+그래서 핵심 로직 이외의 부분을 @Async를 이용하여 비동기로 처리해주면 응답속도를 높일 수 있을 것 같아요.
 
-> ### 기존 코드 - 동기식
-```java
-public List<SchoolDTO> searchSchool(String query, Set<String> district, String sort, int page, int size) throws IOException {
-   addSearchTerm(SearchDto.SearchTerm.create(query));
-   
-   List<Query> queries = new ArrayList<>();
-   if (isExist(district)) {
-   queries.add(matchQuery(ElasticSearch.FIELDS_DISTRICT, district.toString()));
-   }
-   queries.add(multiMatchQuery(query, "name", "city"));
+## 2. 실제 코드 @Async 적용 및 유의사항
 
-    List<SortOptions> sortOptions = new ArrayList<>();
-    sortOptions.add(getSortOptions("_score", SortOrder.Desc));
-    if(SortType.getValue(sort).equals(SortType.LATEST.fieldValue())) {
-        sortOptions.add(getSortOptions("rank", SortOrder.Asc));
-        sortOptions.add(getSortOptions("update_dt", SortOrder.DESC));
-    } else {
-        sortOptions.add(getSortOptions(SortType.getValue(sort), SortType.getOrder(sort)));
-        sortOptions.add(getSortOptions("rank", SortOrder.Asc));
-    }
-    
-    SearchRequest searchRequest = SearchRequest.of(s -> s
-            .index("schoolIndex")
-            .from(page)
-            .size(size)
-            .query(boolQuery(queries))
-            .sort(sortOptions)
-    );
+> #### 기존 코드 - 동기식
+> ```java
+> public List<SchoolDTO> searchSchool(String query, Set<String> district, String sort, int page, int size) throws IOException {
+>    addSearchTerm(SearchDto.SearchTerm.create(query));
+>    
+>    List<Query> queries = new ArrayList<>();
+>    if (isExist(district)) {
+>    queries.add(matchQuery(ElasticSearch.FIELDS_DISTRICT, district.toString()));
+>    }
+>    queries.add(multiMatchQuery(query, "name", "city"));
+> 
+>     List<SortOptions> sortOptions = new ArrayList<>();
+>     sortOptions.add(getSortOptions("_score", SortOrder.Desc));
+>     if(SortType.getValue(sort).equals(SortType.LATEST.fieldValue())) {
+>         sortOptions.add(getSortOptions("rank", SortOrder.Asc));
+>         sortOptions.add(getSortOptions("update_dt", SortOrder.DESC));
+>     } else {
+>         sortOptions.add(getSortOptions(SortType.getValue(sort), SortType.getOrder(sort)));
+>         sortOptions.add(getSortOptions("rank", SortOrder.Asc));
+>     }
+>     
+>     SearchRequest searchRequest = SearchRequest.of(s -> s
+>             .index("schoolIndex")
+>             .from(page)
+>             .size(size)
+>             .query(boolQuery(queries))
+>             .sort(sortOptions)
+>     );
+> 
+>     return elasticsearchClient.search(searchRequest, SchoolDTO.class).hits().hits()
+>             .stream().map(Hit::source).filter(Objects::nonNull).collect(Collectors.toList());
+> }
+> 
+> public void addSearchTerm(SearchDto.SearchTerm searchTerm) throws IOException {
+>     elasticsearchClient.index(i -> i
+>             .index(ElasticSearch.INDEX_QUERY)
+>             .id(searchTerm.getDateUpdated().toString())
+>             .document(searchTerm)
+>     );
+> }
+> ```
 
-    return elasticsearchClient.search(searchRequest, SchoolDTO.class).hits().hits()
-            .stream().map(Hit::source).filter(Objects::nonNull).collect(Collectors.toList());
-}
-
-public void addSearchTerm(SearchDto.SearchTerm searchTerm) throws IOException {
-    elasticsearchClient.index(i -> i
-            .index(ElasticSearch.INDEX_QUERY)
-            .id(searchTerm.getDateUpdated().toString())
-            .document(searchTerm)
-    );
-}
-```
-
-> ### 수정 코드 - 비동기식
-```java
-@GetMapping(value = "/hospitals")
-@Operation(summary = "병원 검색")
-public List<SchoolDTO> searchHospitals(
-    @RequestParam String query,
-    @RequestParam(required = false) String city,
-    @RequestParam(required = false) Set<String> district,
-    @RequestParam(defaultValue = "LATEST") String sort,
-    @RequestParam(defaultValue = "0") @Min(value = 0, message = "from 은 0 이하일 수 없습니다.") int from,
-    @RequestParam(defaultValue = "10") @Min(value = 0, message = "size 는 0 이하일 수 없습니다.") int size
-) {
-   searchService.addSearchTerm(SearchDto.SearchTerm.create(query));
-   List<SchoolDTO> schools = searchService.searchSchool(query, city, district, sort, from, size);
-   return Response.of(schools);
-}
-```
-
-```java
-public List<SchoolDTO> searchSchool(String query, Set<String> district, String sort, int page, int size) throws IOException {
-   List<Query> queries = new ArrayList<>();
-   if (isExist(district)) {
-      queries.add(matchQuery(ElasticSearch.FIELDS_DISTRICT, district.toString()));
-   }
-   queries.add(multiMatchQuery(query, "name", "city"));
-
-   List<SortOptions> sortOptions = new ArrayList<>();
-   sortOptions.add(getSortOptions("_score", SortOrder.Desc));
-   if(SortType.getValue(sort).equals(SortType.LATEST.fieldValue())) {
-      sortOptions.add(getSortOptions("rank", SortOrder.Asc));
-      sortOptions.add(getSortOptions("update_dt", SortOrder.DESC));
-   } else {
-      sortOptions.add(getSortOptions(SortType.getValue(sort), SortType.getOrder(sort)));
-      sortOptions.add(getSortOptions("rank", SortOrder.Asc));
-   }
-
-   SearchRequest searchRequest = SearchRequest.of(s -> s
-           .index("schoolIndex")
-           .from(page)
-           .size(size)
-           .query(boolQuery(queries))
-           .sort(sortOptions)
-   );
-
-   return elasticsearchClient.search(searchRequest, SchoolDTO.class).hits().hits()
-           .stream().map(Hit::source).filter(Objects::nonNull).collect(Collectors.toList());
-}
-
-@Async
-public void addSearchTerm(SearchDto.SearchTerm searchTerm) throws IOException {
-    elasticsearchClient.index(i -> i
-            .index(ElasticSearch.INDEX_QUERY)
-            .id(searchTerm.getDateUpdated().toString())
-            .document(searchTerm)
-    );
-}
-```
+> #### 수정 코드 - 비동기식
+> ```java
+> @GetMapping(value = "/hospitals")
+> @Operation(summary = "병원 검색")
+> public List<SchoolDTO> searchHospitals(
+>     @RequestParam String query,
+>     @RequestParam(required = false) String city,
+>     @RequestParam(required = false) Set<String> district,
+>     @RequestParam(defaultValue = "LATEST") String sort,
+>     @RequestParam(defaultValue = "0") @Min(value = 0, message = "from 은 0 이하일 수 없습니다.") int from,
+>     @RequestParam(defaultValue = "10") @Min(value = 0, message = "size 는 0 이하일 수 없습니다.") int size
+> ) {
+>    searchService.addSearchTerm(SearchDto.SearchTerm.create(query));
+>    List<SchoolDTO> schools = searchService.searchSchool(query, city, district, sort, from, size);
+>    return Response.of(schools);
+> }
+> ```
+> 
+> ```java
+> public List<SchoolDTO> searchSchool(String query, Set<String> district, String sort, int page, int size) throws IOException {
+>    List<Query> queries = new ArrayList<>();
+>    if (isExist(district)) {
+>       queries.add(matchQuery(ElasticSearch.FIELDS_DISTRICT, district.toString()));
+>    }
+>    queries.add(multiMatchQuery(query, "name", "city"));
+> 
+>    List<SortOptions> sortOptions = new ArrayList<>();
+>    sortOptions.add(getSortOptions("_score", SortOrder.Desc));
+>    if(SortType.getValue(sort).equals(SortType.LATEST.fieldValue())) {
+>       sortOptions.add(getSortOptions("rank", SortOrder.Asc));
+>       sortOptions.add(getSortOptions("update_dt", SortOrder.DESC));
+>    } else {
+>       sortOptions.add(getSortOptions(SortType.getValue(sort), SortType.getOrder(sort)));
+>       sortOptions.add(getSortOptions("rank", SortOrder.Asc));
+>    }
+> 
+>    SearchRequest searchRequest = SearchRequest.of(s -> s
+>            .index("schoolIndex")
+>            .from(page)
+>            .size(size)
+>            .query(boolQuery(queries))
+>            .sort(sortOptions)
+>    );
+> 
+>    return elasticsearchClient.search(searchRequest, SchoolDTO.class).hits().hits()
+>            .stream().map(Hit::source).filter(Objects::nonNull).collect(Collectors.toList());
+> }
+> 
+> @Async
+> public void addSearchTerm(SearchDto.SearchTerm searchTerm) throws IOException {
+>     elasticsearchClient.index(i -> i
+>             .index(ElasticSearch.INDEX_QUERY)
+>             .id(searchTerm.getDateUpdated().toString())
+>             .document(searchTerm)
+>     );
+> }
+> ```
 
 실제로 logger 를 찍어보면 비동기로 동작하는 것을 확인할 수 있어요.
 
-테스트를 해보면서 한 가지 알게된 부분은 @Async를 붙인 서비스를 다른 서비스 내에서 호출하면 동작하지 않는다는 것이였어요.
+테스트를 해보면서 한 가지 알게된 부분은 @Async를 붙인 서비스를 다른 서비스 내에서 호출하면 동작하지 않는다는 것이예요.
 
 @Async 서비스를 컨트롤러에서 호출해야 비동기로 실행되는 것을 확인했어요.
 
 @Async 를 쓰실 때 이 부분을 유의하시면 좋을 것 같아요.
 
-##### 3. 성능 개선 확인
+## 3. 성능 개선 확인
 
-원래대로라면 Jmeter나 nGrinder 와 같은 부하 테스트 툴을 이용해서 성능 개선을 검증해봐야하는데요.
+원래대로라면 Jmeter나 nGrinder 와 같은 부하 테스트 툴을 이용해서 성능 개선 결과에 대해 검증을 해봐야하는데요.
 
-아쉽게도 개발 환경에서 엘라스틱 서치가 쓰이고 있어서 부하 테스트는 진행하지 못했어요.
+아쉽게도 개발 환경에서 엘라스틱 서치가 쓰이고 있어서 부하 테스트를 진행하지는 못했어요.
 
 대신에 Postman을 이용해서 무작위로 검색어를 입력해보면서 학교 검색 API를 테스트를 했어요.
 
 아래는 addSearchTerm 함수가 각각 동기/비동기일 때 API 응답시간을 측정한 표예요.
 
-| 항목 | 동기 | 비동기 |
-|----|------|------|
-| 1회 | 785ms | 421ms |
-| 2회 | 310ms | 108ms |
-| 3회 | 212ms | 120ms |
-| 4회 | 247ms | 94ms |
-| 5회 | 240ms | 96ms |
-| 6회 | 233ms | 16ms |
-| 7회 | 115ms | 95ms |
-| 8회 | 229ms | 112ms |
-| 9회 | 266ms | 1112ms |
-| 10회 | 261ms | 105ms |
-| 평균 | 289.8ms | 227.9ms |
+|  항목  |     동기      |     비동기     |
+|:----:|:-----------:|:-----------:|
+|  1회  |    785ms    |    421ms    |
+|  2회  |    310ms    |    108ms    |
+|  3회  |    212ms    |    120ms    |
+|  4회  |    247ms    |    94ms     |
+|  5회  |    240ms    |    96ms     |
+|  6회  |    233ms    |    16ms     |
+|  7회  |    115ms    |    95ms     |
+|  8회  |    229ms    |    112ms    |
+|  9회  |    266ms    |   1112ms    |
+| 10회  |    261ms    |    105ms    |
+|  평균  | 289.8ms | 227.9ms |
 
-비록 API 10회 호출에 대한 테스트 결과이지만 동기보다 비동기일 떄 응답속도가 조금 더 빠른 것을 확인해볼 수 있어요.
+비록 API 10회 호출에 대한 테스트 결과이지만 동기보다 비동기일 때 응답속도가 조금 더 빠른 것을 확인해볼 수 있어요.
 
 앞으로 개발하면서 로직에 대해 고민하면서 비동기를 적용할 수 있는 부분이 있다면 적극적으로 적용해보려고 해요.
 
